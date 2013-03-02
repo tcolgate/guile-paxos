@@ -1,29 +1,37 @@
 (define-module (paxos net mcast)
    #:export (
-     init-sender
-     init-client)
+     make-mcast-reciever make-mcast-sender)
    #:use-module (rnrs bytevectors))
 
 ; SOCK_RDM could be interesting
 ;
 (define IP_MULTICAST_LOOP 34)
 
-(define* (init-client)
+(define* (make-mcast-reciever #:key (port 1234) (group "224.0.1.1"))
   (let ((sck   (socket PF_INET SOCK_DGRAM 0)) 
-        (addr  (inet-pton AF_INET "224.0.1.1" )) 
-        (port  (htons 1234))
-        (scope 4)) 
+        (addr  (inet-pton AF_INET group )) 
+        (nport (htons port))) 
     (setsockopt sck SOL_SOCKET SO_REUSEADDR 1)
     (setsockopt sck IPPROTO_IP IP_ADD_MEMBERSHIP (cons addr INADDR_ANY))
-    (setsockopt sck IPPROTO_IP IP_MULTICAST_TTL scope)
     (setsockopt sck IPPROTO_IP IP_MULTICAST_LOOP 1)
     (bind sck AF_INET INADDR_ANY port)
-    sck))
+    (lambda*(#:key (maxsize 64))
+      (let ((buffer (make-bytevector maxsize 0)))
+        (recv! sck buffer)
+        buffer))))
 
-
-(define* (init-sender)
+(define* (make-mcast-sender #:key (port 1234) (group "224.0.1.1") (scope 4))
   (let ((sck   (socket PF_INET SOCK_DGRAM 0)) 
-        (addr  (inet-pton AF_INET "224.0.1.1" )) 
-        (port  (htons 1234))
+        (addr  (inet-pton AF_INET group )) 
+        (nport (htons port))
         (scope 4)) 
-    sck))
+    (setsockopt sck IPPROTO_IP IP_MULTICAST_TTL scope)
+    (lambda (message)
+      (if (bytevector? message)
+        (let loop ((len  (bytevector-length message))
+                   (gone 0))
+          (let ((sent (sendto sck message AF_INET addr port)))
+            (if (> len (+ gone sent))
+              #f ; should loop round
+              #t)))
+        #f))))

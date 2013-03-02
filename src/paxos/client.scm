@@ -5,9 +5,8 @@
    #:use-module (paxos net mcast))
 
 (define* (client-loop)
-  (let ((sck  (init-client))
-        (buf  (make-bytevector 64)))
+  (let ((rcv  (make-mcast-reciever)))
     (while #t 
-      (let ((count (recv! sck buf))) 
-      (format #t (utf8->string buf))))))
+      (let ((buf (rcv))) 
+        (format #t (utf8->string buf))))))
 

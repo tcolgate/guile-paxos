@@ -1,4 +1,4 @@
-SCHEMESOURCES=
+SCHEMESOURCES=acceptor.scm learner.scm  proposer.scm
 
 if HAVE_GUILE_COMPILE
 GOBJECTS = $(SCHEMESOURCES:%.scm=%.go)

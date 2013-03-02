@@ -8,5 +8,6 @@
   (let ((rcv  (make-mcast-reciever)))
     (while #t 
       (let ((buf (rcv))) 
-        (format #t (utf8->string buf))))))
+        (format #t (utf8->string buf))
+        (sleep 1)))))
 

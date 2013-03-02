@@ -1,0 +1,48 @@
+%define ver          @VERSION@
+%define rel          1
+%define prefix       /usr
+%define home_page    @PACKAGE_URL@
+%define docprefix    %{prefix}/share
+
+Name: @PACKAGE@
+Summary: A guile implementation of the Paxos consensus protocol
+Version: %{ver}
+Release: %{rel}
+URL: %{home_page}
+Source0: @PACKAGE_TARNAME@-%{version}.tar.gz
+License: GPLv3
+Group: Applications/System
+BuildRoot: %{_tmppath}/%{name}-root
+Requires: guile
+
+%description
+
+Guile Paxos is a pure scheme implementation of the Paxos 
+consensus protocol
+
+%prep
+%setup -q -n %{name}-%{version}
+
+%build
+[ ! -r configure ] && ./autogen.sh
+%configure 
+
+make
+
+%install
+rm -rf ${RPM_BUILD_ROOT}
+make DESTDIR=$RPM_BUILD_ROOT 
+
+%clean
+rm -rf ${RPM_BUILD_ROOT}
+
+%files
+%defattr(-,root,root)
+%doc ChangeLog COPYING README
+%doc doc/*
+%dir %{_prefix}/share/guile/site/2.0/paxos
+%{_prefix}/share/guile/site/2.0/paxos/*
+
+%changelog
+
+* Sat Mar 2 2013 Tristan Colgate <tcolgate@gmail.com> 0.1-1

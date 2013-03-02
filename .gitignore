@@ -22,3 +22,4 @@ guile-paxos.spec
 Makefile
 .deps
 .cache
+tags

@@ -27,18 +27,3 @@
         (port  (htons 1234))
         (scope 4)) 
     sck))
-
-(define* (client-loop)
-  (let ((sck  (init-client))
-        (buf  (make-bytevector 64)))
-    (while #t 
-      (let ((count (recv! sck buf))) 
-      (format #t (utf8->string buf))))))
-
-(define* (sender-loop)
-  (let ((sck  (init-sender))
-        (addr (inet-pton AF_INET "224.0.1.1" )) 
-        (port (htons 1234)))
-    (while #t 
-      (sendto sck (string->utf8 "This is my message to you\n") AF_INET addr port)
-      (sleep 1))))

@@ -1,0 +1,11 @@
+
+Guile-Paxos
+===========
+
+  This is an attempt to implement the Paxos consensus
+protocol in guile scheme.
+
+  There is nothing practical or useful here as yet,
+this is my attempt to learn a bit about Paxos, and to
+improve my scheme
+

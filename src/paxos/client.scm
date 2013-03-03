@@ -5,9 +5,11 @@
    #:use-module (paxos net mcast))
 
 (define* (client-loop)
-  (let ((rcv  (make-mcast-reciever)))
+  (let ((rcv  (make-mcast-reciever #:blocking #f)))
     (while #t 
       (let ((buf (rcv))) 
-        (format #t (utf8->string buf))
+        (if (not (eq? buf #f)) 
+          (format #t (utf8->string buf))
+          (format #t "no data~%")) 
         (sleep 1)))))
 

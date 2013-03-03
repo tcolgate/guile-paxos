@@ -1,5 +1,4 @@
-SCHEMESOURCES=client.scm\
-              server.scm
+SCHEMESOURCES=coroutine.scm
 
 if HAVE_GUILE_COMPILE
 GOBJECTS = $(SCHEMESOURCES:%.scm=%.go)
@@ -18,7 +17,6 @@ guilesite = @GUILE_SITE@
 guileprefix = @GUILE_PREFIX@
 guilesitesuffix = `echo $(guilesite) | sed -e 's!^$(guileprefix)!!'`
 
-installdir =  $(exec_prefix)/$(guilesitesuffix)/paxos
+installdir =  $(exec_prefix)/$(guilesitesuffix)/paxos/misc
 install_DATA = $(SCHEMESOURCES) $(GOBJECTS)
 
-SUBDIRS = server client net misc

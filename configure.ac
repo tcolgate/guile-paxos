@@ -38,6 +38,7 @@ AC_CONFIG_FILES([Makefile
                  src/paxos/server/db/Makefile 
                  src/paxos/client/Makefile 
                  src/paxos/net/Makefile 
+                 src/paxos/misc/Makefile 
                  tests/Makefile ])
 
 AC_CONFIG_FILES([guile-paxos.spec])

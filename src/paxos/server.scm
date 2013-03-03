@@ -12,11 +12,15 @@
       (sleep 1))))
 
 (define (majority N)
-  (inexact->exact  (if (odd? N) 
-   (+ (/ N 2) 0.5) 
+  (inexact->exact  (if (odd? N)
+   (+ (/ N 2) 0.5)
    (+ (/ N 2) 1))))
 
-(define* (start-server #:key (acceptors 3))
+(define* (start-server 
+           #:key (acceptors 3)
+                 (acceptorsGroup "224.0.1.1")
+                 (proposersGroup "224.0.1.2")
+                 (learnersGroup  "224.0.1.2"))
   "Start a paxos service with a stated number of acceptors"
   (format #t "Start cluster of ~d needing atleast ~d~%" acceptors (majority acceptors))
   (sender-loop))

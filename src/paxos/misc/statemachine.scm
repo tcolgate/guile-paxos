@@ -16,43 +16,48 @@
     ((_ initstate current next 
         (statename : response ...) 
         ...)
-     (let-syntax ((process-state
+     (letrec-syntax ((process-transition
+                  (syntax-rules ()
+                    ((_ (label target) (... ...))
+                     #,@(((equal? label) (target (next state))) 
+                       (... ...))))) 
+                  (process-state
                   (syntax-rules (accept abort ->)
-                   ((_ accept)
+                    ((_ accept)
                      (lambda(state)
                        (values #t state)))
-                   ((_ abort)
+                    ((_ abort)
                      (lambda(state)
                        (values #f state)))
-                  ((_ (label -> target) (...  ...))
+                    ((_ (label -> target) (...  ...))
                      (lambda(state)
                        (let ((c (current state)))
                          (cond
-                           ((equal? label c) (target (next state)))
-                           (... ...)
+                           (process-transition 
+                             (label target) (... ...)) 
                            (else (values #f state))))))
-                  ((_ (label -> target) (...  ...) -> fallback)
+                    ((_ (label -> target) (...  ...) -> fallback)
                      (lambda(state)
                        (let ((c (current state)))
                          (cond
-                           ((equal? label c) (target (next state)))
-                           (... ...)
+                           (process-transition 
+                             (label target) (... ...))
                            (else (fallback (next state))))))))))
 
        (letrec ((statename (process-state response ...))
                  ...)
           initstate )))))
 
-;(define test 
-;  (automaton init stream-car stream-cdr
-;    (init  : (1 -> more))
-;    (more  : (2 -> more)
-;             (3 -> more)
-;             (4 -> end)
-;             -> other)
-;    (other : (5 -> fail)
-;             (6 -> end)
-;             (7 -> init))
-;    (fail  : abort)
-;    (end   : accept)))
+(define test 
+  (automaton init stream-car stream-cdr
+    (init  : (1 -> more))
+    (more  : (2 -> more)
+             (3 -> more)
+             (4 -> end)
+             -> other)
+    (other : (5 -> fail)
+             (6 -> end)
+             (7 -> init))
+    (fail  : abort)
+    (end   : accept)))
 

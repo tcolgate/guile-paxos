@@ -1,4 +1,4 @@
-(define-module (paxos net coroutine)
+(define-module (paxos misc statemachine)
    #:export (
      call-with-yield)
    #:export-syntax (
@@ -16,37 +16,37 @@
     ((_ initstate current next 
         (statename : response ...) 
         ...)
-     (letrec-syntax ((process-transition
-                  (syntax-rules ()
-                    ((_ (label target) (... ...))
-                     #,@(((equal? label) (target (next state))) 
-                       (... ...))))) 
-                  (process-state
-                  (syntax-rules (accept abort ->)
-                    ((_ accept)
-                     (lambda(state)
-                       (values #t state)))
-                    ((_ abort)
-                     (lambda(state)
-                       (values #f state)))
-                    ((_ (label -> target) (...  ...))
-                     (lambda(state)
-                       (let ((c (current state)))
-                         (cond
-                           (process-transition 
-                             (label target) (... ...)) 
-                           (else (values #f state))))))
-                    ((_ (label -> target) (...  ...) -> fallback)
-                     (lambda(state)
-                       (let ((c (current state)))
-                         (cond
-                           (process-transition 
-                             (label target) (... ...))
-                           (else (fallback (next state))))))))))
+     (letrec-syntax 
+       ((process-transition
+          (syntax-rules (->)
+                        ((_ (label -> target))
+                         ((equal? label 1) (target (next state)))))) 
+        (process-state
+          (syntax-rules (accept abort ->)
+                        ((_ accept)
+                         (lambda(state)
+                           (values #t state)))
+                        ((_ abort)
+                         (lambda(state)
+                           (values #f state)))
+                        ((_ (transition-spec ...) ...)
+                         (lambda(state)
+                           (let ((c (current state)))
+                             (cond
+                               (process-transition (transition-spec ...)) 
+                               ...
+                               (else (values #f state))))))
+                        ((_ (transition-spec ...) ... -> fallback)
+                         (lambda(state)
+                           (let ((c (current state)))
+                             (cond
+                               (process-transition (transition-spec ...)) 
+                               ...
+                               (else (fallback (next state))))))))))
 
        (letrec ((statename (process-state response ...))
-                 ...)
-          initstate )))))
+                ...)
+         initstate )))))
 
 (define test 
   (automaton init stream-car stream-cdr

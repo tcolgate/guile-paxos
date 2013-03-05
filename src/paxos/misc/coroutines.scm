@@ -1,4 +1,4 @@
-(define-module (paxos net coroutine)
+(define-module (paxos misc coroutines)
    #:export (
      call-with-yield)
    #:export-syntax (

@@ -5,6 +5,7 @@
      with-yield)
    #:use-module (ice-9 format)
    #:use-module (ice-9 streams)
+   #:use-module (ice-9 pretty-print)
    #:use-module (paxos misc coroutines)
    )
  
@@ -19,8 +20,8 @@
      (letrec-syntax 
        ((process-transition
           (syntax-rules (->)
-                        ((_ (label -> target))
-                         ((equal? label 1) (target (next state)))))) 
+                        ((_ c state (label -> target))
+                         ((equal? label c) (target (next state)))))) 
         (process-state
           (syntax-rules (accept abort ->)
                         ((_ accept)
@@ -29,26 +30,26 @@
                         ((_ abort)
                          (lambda(state)
                            (values #f state)))
-                        ((_ (transition-spec ...) ...)
+                        ((_  (label -> target) (... ...))
                          (lambda(state)
                            (let ((c (current state)))
                              (cond
-                               (process-transition (transition-spec ...)) 
-                               ...
+                               (process-transition c state (label -> target))
+                               (... ...)
                                (else (values #f state))))))
-                        ((_ (transition-spec ...) ... -> fallback)
+                        ((_  (label -> target) (... ...) -> fallback)
                          (lambda(state)
                            (let ((c (current state)))
                              (cond
-                               (process-transition (transition-spec ...)) 
-                               ...
+                               (process-transition c state (label -> target))
+                               (... ...)
                                (else (fallback (next state))))))))))
 
        (letrec ((statename (process-state response ...))
                 ...)
          initstate )))))
 
-(define test 
+(pretty-print
   (automaton init stream-car stream-cdr
     (init  : (1 -> more))
     (more  : (2 -> more)

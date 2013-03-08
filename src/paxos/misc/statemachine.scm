@@ -18,10 +18,14 @@
         (statename : response ...) 
         ...)
      (letrec-syntax 
-       ((process-transition
-          (syntax-rules (->)
-                        ((_ c state (label -> target))
-                         ((equal? label c) (target (next state)))))) 
+       ((process-transition-test
+          (syntax-rules ()
+                        ((_ C label)
+                         (equal? label C)))) 
+        (process-transition-action
+          (syntax-rules ()
+                        ((_ state target)
+                         (target (next state)))))
         (process-state
           (syntax-rules (accept abort ->)
                         ((_ accept)
@@ -34,14 +38,16 @@
                          (lambda(state)
                            (let ((c (current state)))
                              (cond
-                               (process-transition c state (label -> target))
+                               ((process-transition-test c label) 
+                                (process-transition-action state target)) 
                                (... ...)
                                (else (values #f state))))))
                         ((_  (label -> target) (... ...) -> fallback)
                          (lambda(state)
                            (let ((c (current state)))
                              (cond
-                               (process-transition c state (label -> target))
+                               ((process-transition-test c label) 
+                                (process-transition-action state target)) 
                                (... ...)
                                (else (fallback (next state))))))))))
 

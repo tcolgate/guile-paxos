@@ -1,6 +1,7 @@
 (define-module (paxos misc statemachine)
    #:export-syntax (
      automaton)
+   #:use-module (srfi srfi-1)
    #:use-module (ice-9 format)
    #:use-module (ice-9 streams)
    #:use-module (ice-9 pretty-print)
@@ -12,7 +13,7 @@
 ; http://cs.brown.edu/~sk/Publications/Papers/Published/sk-automata-macros/paper.pdf
 (define-syntax automaton
   (syntax-rules (:)
-    ((_ initstate current next 
+    ((_ initstate current next empty?
         (statename : response ...) 
         ...)
      (letrec-syntax 
@@ -22,8 +23,9 @@
                          (equal? label C)))) 
         (process-transition-action
           (syntax-rules ()
-                        ((_ state target)
-                         (target (next state)))))
+                        ((_ state target hooks)
+                         (begin
+                         (target (next (fold apply state hooks)))))))
         (process-state
           (syntax-rules (accept abort ->)
                         ((_ accept)
@@ -32,22 +34,26 @@
                         ((_ abort)
                          (lambda(state)
                            (values #f state)))
-                        ((_  (label -> target) (... ...))
+                        ((_  (label -> target hooks (... ...)) (... ...))
                          (lambda(state)
-                           (let ((c (current state)))
-                             (cond
-                               ((process-transition-test c label) 
-                                (process-transition-action state target)) 
-                               (... ...)
-                               (else (values #f state))))))
-                        ((_  (label -> target) (... ...) -> fallback)
+                           (if (empty? state)
+                             (values #f state)
+                             (let ((c (current state)))
+                               (cond
+                                 ((process-transition-test c label)
+                                  (process-transition-action state target (list hooks (... ...))))
+                                 (... ...)
+                                 (else (values #f state)))))))
+                        ((_  (label -> target hooks (... ...)) (... ...) -> fallback)
                          (lambda(state)
-                           (let ((c (current state)))
-                             (cond
-                               ((process-transition-test c label) 
-                                (process-transition-action state target)) 
-                               (... ...)
-                               (else (fallback (next state))))))))))
+                           (if (empty? state)
+                             (values #f state)
+                             (let ((c (current state)))
+                               (cond
+                                 ((process-transition-test c label)
+                                  (process-transition-action state target (list hooks (... ...))))
+                                 (... ...)
+                                 (else (fallback (next state)))))))))))
 
        (letrec ((statename (process-state response ...))
                 ...)

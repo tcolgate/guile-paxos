@@ -1,8 +1,6 @@
 (define-module (paxos misc statemachine)
-   #:export (
-     call-with-yield)
    #:export-syntax (
-     with-yield)
+     automaton)
    #:use-module (ice-9 format)
    #:use-module (ice-9 streams)
    #:use-module (ice-9 pretty-print)
@@ -55,16 +53,5 @@
                 ...)
          initstate )))))
 
-(pretty-print
-  (automaton init stream-car stream-cdr
-    (init  : (1 -> more))
-    (more  : (2 -> more)
-             (3 -> more)
-             (4 -> end)
-             -> other)
-    (other : (5 -> fail)
-             (6 -> end)
-             (7 -> init))
-    (fail  : abort)
-    (end   : accept)))
+
 

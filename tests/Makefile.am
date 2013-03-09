@@ -1,4 +1,6 @@
-TESTS=test-stataemachine.scm
+TESTS=test-stataemachine.scm \
+			test-coroutines.scm \
+			test-mcast.scm
 
 TESTS_ENVIRONMENT=\
   guile --no-auto-compile -L $(top_srcdir) -L $(top_srcdir)/src --use-srfi=64

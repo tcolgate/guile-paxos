@@ -28,21 +28,3 @@
      (call-with-yield
       (lambda (yield) exp exp* ...)))))
 
-; (define (generate traverse collection)
-;  (with-yield yield
-;    (traverse yield collection)))
-; 
-;> (generate for-each '(three blind mice))
-;$1 = #<procedure resume args>
-;$2 = three
-;> ($1)
-;$3 = #<procedure resume args>
-;$4 = blind
-;> ($3)
-;$5 = #<procedure resume args>
-;$6 = mice
-;> ($1)
-;$7 = #<procedure resume args>
-;$8 = blind
-;> ($5)
-

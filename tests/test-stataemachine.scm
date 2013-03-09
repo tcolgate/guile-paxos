@@ -4,24 +4,32 @@
 
 (test-begin "Statemachine tests") 
 
-(test-equal "simple pass" 
-            #t
-            ((automaton init stream-car stream-cdr
-                        (init  : (1 -> more))
-                        (more  : (2 -> more)
+; simple - matches a 1 [234] 5
+(let ((simple (automaton init stream-car stream-cdr stream-null?
+                         (init : (1 -> more)
+                               -> init)
+                         (more : (2 -> more)
                                (3 -> more)
-                               (4 -> end)
-                               -> other)
-                        (other : (5 -> fail)
-                               (6 -> end)
-                               (7 -> init))
-                        (fail  : abort)
-                        (end   : accept))
-            (list->stream (list 1 2 3 3 4))))
+                               (4 -> more)
+                               (5 -> end)
+                               -> init)
+                         (end   : accept))))
+  (test-equal "simple pass" 
+              #t
+              (simple (list->stream (list 1 2 3 4 2 5)))) 
+  (test-equal "simple pass - late start" 
+              #t
+              (simple (list->stream (list 9 9 9 1 2 3 4 2 5))))
+  (test-equal "simple pass - restart" 
+              #f
+              (simple (list->stream (list 1 2 3 9 9 1 2 3 4)))) 
+  (test-equal "simple fail - short" 
+              #f
+              (simple (list->stream (list 1 2 3 3 4)))))
 
-(test-equal "simple fail" 
+(test-equal "simple abort fail" 
             #f
-            ((automaton init stream-car stream-cdr
+            ((automaton init stream-car stream-cdr stream-null?
                         (init  : (1 -> more))
                         (more  : (2 -> more)
                                (3 -> more)

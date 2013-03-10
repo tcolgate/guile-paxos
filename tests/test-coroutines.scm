@@ -15,9 +15,9 @@
                (test-equal "generate - call3" value3 'mice)))
 
 (define passed
-  (if (test-passed? (test-runner-current)) 
-    0 
-    1)) 
+  (if (eq? (test-runner-fail-count (test-runner-current)) 0)
+    0
+    1))
 
 (test-end "Coroutine tests") 
 

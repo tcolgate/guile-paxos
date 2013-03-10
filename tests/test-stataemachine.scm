@@ -43,7 +43,7 @@
             (list->stream (list 1 2 3 9 5))))
 
 (define passed
-  (if (test-passed? (test-runner-current)) 
+  (if (eq? (test-runner-fail-count (test-runner-current)) 0) 
     0 
     1)) 
 

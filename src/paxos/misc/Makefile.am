@@ -1,5 +1,6 @@
 SCHEMESOURCES=coroutines.scm \
-              statemachine.scm
+              statemachine.scm \
+							utils.scm
 
 if HAVE_GUILE_COMPILE
 GOBJECTS = $(SCHEMESOURCES:%.scm=%.go)

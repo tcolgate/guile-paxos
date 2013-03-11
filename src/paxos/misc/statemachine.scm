@@ -9,8 +9,12 @@
    )
  
 
-; This macro is taken pretty much wholesale from
+; This macro started life as:
 ; http://cs.brown.edu/~sk/Publications/Papers/Published/sk-automata-macros/paper.pdf
+; The hooks format is:
+; (lambda(srcinfo targetinfo state)
+;   ...
+;   state)
 (define-syntax automaton
   (syntax-rules (:)
     ((_ initstate current next empty?
@@ -23,41 +27,49 @@
                          (equal? label C)))) 
         (process-transition-action
           (syntax-rules ()
-                        ((_ state target hooks)
-                         (begin
-                         (target (next (fold apply state hooks)))))))
+                        ((_ state targetfunc targetsym srcfunc srcsym hooks)
+                         (targetfunc 
+                           (next 
+                             (fold 
+                               apply 
+                               state 
+                               hooks
+                               (make-list (length hooks) (cons srcsym srcfunc))
+                               (make-list (length hooks) (cons targetsym targetfunc)) 
+                               ))))))
         (process-state
           (syntax-rules (accept abort ->)
-                        ((_ accept)
+                        ((_ srcfunc srcsym accept)
                          (lambda(state)
-                           (values #t state)))
-                        ((_ abort)
+                           (values #t state (cons srcsym srcfunc))))
+                        ((_ srcfunc srcsym abort)
                          (lambda(state)
-                           (values #f state)))
-                        ((_  (label -> target hooks (... ...)) (... ...))
+                           (values #f state (cons srcsym srcfunc))))
+                        ((_ srcfunc srcsym  (label -> target hooks (... ...)) (... ...))
                          (lambda(state)
                            (if (empty? state)
-                             (values #f state)
+                             (values #f state (cons srcsym srcfunc))
                              (let ((c (current state)))
                                (cond
                                  ((process-transition-test c label)
-                                  (process-transition-action state target (list hooks (... ...))))
+                                  (process-transition-action 
+                                    state target (quote target) srcfunc srcsym (list hooks (... ...))))
                                  (... ...)
                                  (else (values #f state)))))))
-                        ((_  (label -> target hooks (... ...)) (... ...) -> fallback)
+                        ((_ srcfunc srcsym (label -> target hooks (... ...)) (... ...) -> fallback)
                          (lambda(state)
                            (if (empty? state)
-                             (values #f state)
+                             (values #f state (cons srcsym srcfunc))
                              (let ((c (current state)))
                                (cond
                                  ((process-transition-test c label)
-                                  (process-transition-action state target (list hooks (... ...))))
+                                  (process-transition-action 
+                                    state target (quote target) srcfunc srcsym (list hooks (... ...))))
                                  (... ...)
                                  (else (fallback (next state)))))))))))
 
-       (letrec ((statename (process-state response ...))
+       (letrec ((statename (process-state statename (quote statname) response ...))
                 ...)
          initstate )))))
-
 
 

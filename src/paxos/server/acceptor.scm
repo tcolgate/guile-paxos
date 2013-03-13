@@ -7,11 +7,14 @@
    #:use-module (paxos net mcast))
 
 
+(use-modules (ice-9 pretty-print))
+
 (define-syntax accepter-autommata
   (lambda (stx)
     "Build an acceptor automata for a corpus of N nodes"
-    (let* ((count         (majority (cadr (syntax->datum stx))))
-           (learnstates   (let loop ((N   (- count 1))
+    (let* ((nodes         (cadr (syntax->datum stx)))
+           (maj           (majority nodes))
+           (learnstates   (let loop ((N   (- maj 1))
                                      (acc '()))
                             (if (> N 0)
                               (loop (- N 1) (append (list (string->symbol
@@ -19,12 +22,35 @@
                                                               "learn"
                                                               (number->string N))))
                                                     acc))
+                              acc))) 
+           (initstates    (append (list 'init) learnstates))
+           (activestates  (let loop ((N   (- nodes maj))
+                                     (acc '()))
+                            (if (>= N 0)
+                              (loop (- N 1) (append (list (string->symbol
+                                                            (string-append
+                                                              "active"
+                                                              (number->string N))))
+                                                    acc))
                               acc)))
-           (states (append (list 'init) learnstates (list 'active))))
+           (allstates (append initstates activestates)))
       (syntax-case stx ()
          ((_ N forms ...)
-          #``(automaton init stream-car stream-cdr stream-null?
-                        #,@(map (lambda (sym) (datum->syntax stx sym)) states)))))))
+          #``(automaton init stream-car stream-cdr stream-null? equal?
+              (init : ('hello -> #,(datum->syntax stx (cadr allstates)))
+                      -> init)
+              #,@(map (lambda (prev curr next) 
+                         #`(#,(datum->syntax stx curr) : 
+                            ('hello -> accept)
+                            ('goodbye -> abort))) 
+                     allstates
+                     (cdr allstates)
+                     (cddr allstates))
+;              #,@(map (lambda (sym) 
+;                        (datum->syntax stx sym)) 
+;                      activestates)
+              (stop : accept)
+              (fail : abort)))))))
 
 (define* (acceptor-loop)
   (let ((sck  (init-client))
@@ -35,8 +61,7 @@
 
 (define* (start-acceptor)
   "Start an acceptor"
-  (format #t "~a~%" (accepter-autommata 9))
-  )
+  (pretty-print (accepter-autommata 5)))
 
 (start-acceptor)
 
@@ -49,7 +74,11 @@
 ;   (learn2 : ('hello -> active)
 ;            ('goodbye -> learn1)
 ;           -> init)
-;   (active : ('goodbye -> learn2)
+;   (active0 : ('goodbye -> learn2
+;               'hello   -> active1))
+;   (active1 : ('goodbye -> active0
+;               'hello   -> active2))
+;   (active2 : ('goodbye -> active1)
 ;           ...
 ;           -> init)
 ;   )

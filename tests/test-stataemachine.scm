@@ -5,7 +5,7 @@
 (test-begin "Statemachine tests") 
 
 ; simple - matches a 1 [234] 5
-(let ((simple (automaton init stream-car stream-cdr stream-null?
+(let ((simple (automaton init stream-car stream-cdr stream-null? equal?
                          (init : (1 -> more)
                                -> init)
                          (more : (2 -> more)
@@ -29,7 +29,7 @@
 
 (test-equal "simple abort fail" 
             #f
-            ((automaton init stream-car stream-cdr stream-null?
+            ((automaton init stream-car stream-cdr stream-null? equal?
                         (init  : (1 -> more))
                         (more  : (2 -> more)
                                (3 -> more)

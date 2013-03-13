@@ -17,14 +17,14 @@
 ;   state)
 (define-syntax automaton
   (syntax-rules (:)
-    ((_ initstate current next empty?
+    ((_ initstate current next empty? isequal?
         (statename : response ...) 
         ...)
      (letrec-syntax 
        ((process-transition-test
           (syntax-rules ()
                         ((_ C label)
-                         (equal? label C)))) 
+                         (isequal? label C)))) 
         (process-transition-action
           (syntax-rules ()
                         ((_ state targetfunc targetsym srcfunc srcsym hooks)

@@ -16,11 +16,12 @@
 ;   ...
 ;   state)
 (define-syntax automaton
-  (syntax-rules (:)
+  (lambda (stx)
+  (syntax-case stx(: *)
     ((_ initstate current next empty? isequal?
-        (statename : response ...) 
+        (statename * N ladderprev laddernext : response ...) 
         ...)
-     (letrec-syntax 
+     #`(letrec-syntax 
        ((process-transition-test
           (syntax-rules ()
                         ((_ C label)
@@ -70,6 +71,13 @@
 
        (letrec ((statename (process-state statename (quote statname) response ...))
                 ...)
-         initstate )))))
+         initstate )))
+
+      ((_ initstate current next empty? isequal?
+          (statename : response ...) 
+          ...)
+       #`(automaton initstate current next empty? isequal?
+                    (statename * #f #f #f : response ...) 
+                    ...)))))
 
 

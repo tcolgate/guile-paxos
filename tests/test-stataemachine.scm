@@ -42,6 +42,19 @@
                         (end   : accept))
             (list->stream (list 1 2 3 9 5))))
 
+(test-equal "simple alias test"
+            #t
+            ((automaton init stream-car stream-cdr stream-null? equal?
+                        (init       : (1 -> more))
+                        (more       : (2 -> more)
+                                      (3 -> more/end)
+                                      (4 -> end)
+                                      -> other)
+                        (more/end   : alias more)
+                        (fail       : abort)
+                        (end        : accept))
+            (list->stream (list 1 2 3 3 4))))
+
 (define passed
   (if (eq? (test-runner-fail-count (test-runner-current)) 0) 
     0 

@@ -7,9 +7,8 @@
            #:use-module (ice-9 format)
            #:use-module (ice-9 streams)
            #:use-module (ice-9 pretty-print)
-           #:use-module (paxos misc coroutines)
-           )
-        
+           #:use-module (paxos misc coroutines))
+
 
         ; This macro started life as:
         ; http://cs.brown.edu/~sk/Publications/Papers/Published/sk-automata-macros/paper.pdf
@@ -24,54 +23,70 @@
              (letrec-syntax
                ((process-automaton
                   (lambda (stx)
-                    (syntax-case 
+                    (syntax-case
                       stx ()
                       ((_ initstate current next empty? isequal?
                           (statespec (... ...))
                           (... ...))
                        (let
                          ((specs (match (syntax->datum stx)
-                                        ((_ _ _ _ _ _ 
-                                            (spec (... ...)) 
+                                        ((_ _ _ _ _ _
+                                            (spec (... ...))
                                             (... ...))
-                                         spec)))) 
-                         (let ((states (map ; (statename (lambda...))
-                                         (lambda(spec)
-                                           (let-values 
-                                             (((sn n b a srs) 
-                                               (match spec 
-                                                      ((sn ': srs (... ...))
-                                                       (values 
-                                                         (datum->syntax stx sn)
-                                                         #f #f #f 
-                                                         (datum->syntax stx srs)))
-                                                      ((sn n b a ': srs (... ...))
-                                                       (values 
-                                                         (datum->syntax stx sn)
-                                                         n
-                                                         (datum->syntax stx sn)
-                                                         (datum->syntax stx srs))
-                                                       (values sn n b a srs)))))
+                                         spec))))
+                         (let* ((initname (syntax->datum (syntax initstate)))
+                                (states (map ; (statename (lambda...))
+                                          (lambda(spec)
+                                            (let-values
+                                              (((sn n b a srs)
+                                                (match spec
+                                                       ((sn ': srs (... ...))
+                                                        (values
+                                                          (datum->syntax stx sn)
+                                                          #f #f #f
+                                                          (datum->syntax stx srs)))
+                                                       ((sn n b a ': srs (... ...))
+                                                        (values
+                                                          (datum->syntax stx sn)
+                                                          n
+                                                          b
+                                                          a
+                                                          (datum->syntax stx srs))))))
 
-                                             (if (and (integer? n)
-                                                      (> n 0))
-                                               #`(#,sn  
-                                                  (process-state-responses 
-                                                    #,sn 
-                                                    (quote #,sn) 
-                                                    current next empty? isequal? 
-                                                    #,@srs)) 
-                                               #`(#,sn 
-                                                  (process-state-responses 
-                                                    #,sn
-                                                    (quote #,sn)
-                                                    current next empty? isequal?
-                                                    #,@srs))
-                                               )))
-                                         specs)))
+                                              (if (and (integer? n)
+                                                       (> n 0))
+                                                ; This specifies a ladder of states
+                                                (cons sn
+                                                      #`(process-state-responses
+                                                          #,sn
+                                                          (quote #,sn)
+                                                          current next empty? isequal?
+                                                          #,@srs))
+                                                ; An individual state
+                                                (cons sn
+                                                      #`(process-state-responses
+                                                          #,sn
+                                                          (quote #,sn)
+                                                          current next empty? isequal?
+                                                          #,@srs)))))
+                                          specs))
+                                (names (map car states))
+                                (funcs (map cdr states)))
 
-                           (pretty-print (syntax->datum #`(letrec (#,@states) 
-                               initstate)))))))))
+                           #`(build-automaton-letrec
+                               ; This  "recasts" this variable into the current syntax
+                               ; environment, it works anyway!
+                               #,(datum->syntax stx (syntax->datum (syntax initstate)))
+                               #,names #,funcs)))))))
+
+                (build-automaton-letrec
+                  (lambda (stx)
+                    (syntax-case stx
+                                 ()
+                                 ((_ initstate (sns (... ...)) (funcs (... ...)))
+                                  #`(letrec ((sns funcs)
+                                             (... ...))
+                                      initstate)))))
 
                 (process-transition-test
                   (syntax-rules

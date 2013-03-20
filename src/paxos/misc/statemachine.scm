@@ -16,6 +16,11 @@
         ; (lambda(srcinfo targetinfo state)
         ;   ...
         ;   state)
+        ;
+        ;   The ladder generation makes this all a lot uglier
+        ;   the pmatch could probably be avoided with better syntax-rules use
+        ;   It needs breaking up a bit
+        ;
         (define-syntax automaton
           (syntax-rules
             ()
@@ -91,31 +96,48 @@
                                                                       (string-append
                                                                         (symbol->string sn)
                                                                         "/next"))))
-                                                         (allstates (append before after intermediate))
+                                                         (allstates (append before intermediate after))
                                                          ; The head of the ladder is the second state
                                                          (headtarg  (list-ref allstates 1))
                                                          ; The tail of the ladder is the penultimate state
                                                          (tailtarg  (list-ref allstates (+ n 1))))
                                                     (append
-                                                      (list (cons (headsym
-                                                                  #`(process-state-responses
-                                                                      #,headsym
-                                                                      (quote #,headsym)
-                                                                      current next empty? isequal?
-                                                                      alias #,headtarg))))
+                                                      (list
+                                                        (cons headsym
+                                                              #`(process-state-responses
+                                                                  #,headsym
+                                                                  (quote #,headsym)
+                                                                  current next empty? isequal?
+                                                                  alias #,headtarg))
 
-                                                      (list (cons tailsym
-                                                                  #`(process-state-responses
-                                                                      #,tailsym
-                                                                      (quote #,tailsym)
-                                                                      current next empty? isequal?
-                                                                      alias #,tailtarg)))
-                                                      (cons sn/stx
-                                                            #`(process-state-responses
-                                                                #,sn/stx
-                                                                (quote #,sn/stx)
-                                                                current next empty? isequal?
-                                                                #,@srs/stx))))
+                                                        (cons tailsym
+                                                              #`(process-state-responses
+                                                                  #,tailsym
+                                                                  (quote #,tailsym)
+                                                                  current next empty? isequal?
+                                                                  alias #,tailtarg)))
+                                                      (let loop ((N 1)
+                                                                 (acc '()))
+                                                        (if (<= N n)
+                                                          (loop
+                                                            (+ N 1)
+                                                            (append
+                                                              acc
+                                                              (let ((curr (list-ref allstates N))
+                                                                    (prev (list-ref allstates (- N 1)))
+                                                                    (next (list-ref allstates (+ N 1))))
+                                                                (list
+                                                                  (cons
+                                                                    curr
+                                                                    #`(let ((#,prevsym #,prev)
+                                                                            (#,nextsym #,next)
+                                                                            (#,sn/stx #,curr))
+                                                                        (process-state-responses
+                                                                          #,sn/stx
+                                                                          (quote #,sn/stx)
+                                                                          current next empty? isequal?
+                                                                          #,@srs/stx)))))))
+                                                          acc))))
                                                   ; An individual state
                                                   (cons sn/stx
                                                         #`(process-state-responses

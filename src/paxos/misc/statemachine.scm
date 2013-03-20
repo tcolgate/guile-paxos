@@ -41,34 +41,88 @@
                                               (((sn n b a srs)
                                                 (match spec
                                                        ((sn ': srs (... ...))
-                                                        (values
-                                                          (datum->syntax stx sn)
-                                                          #f #f #f
-                                                          (datum->syntax stx srs)))
+                                                        (values sn #f #f #f srs))
                                                        ((sn n b a ': srs (... ...))
-                                                        (values
-                                                          (datum->syntax stx sn)
-                                                          n
-                                                          b
-                                                          a
-                                                          (datum->syntax stx srs))))))
+                                                        (values sn n b a srs)))))
+                                              (let ((sn/stx (datum->syntax stx sn))
+                                                    (srs/stx (datum->syntax stx srs)))
+                                                (if (and (integer? n)
+                                                         (> n 0))
+                                                  ; This specifies a ladder of states
+                                                  (let* ((before (list (datum->syntax stx b)))
+                                                         (after  (list (datum->syntax stx a)))
+                                                         (intermediate
+                                                           (let loop ((N n) (acc '()))
+                                                             (if (> N 0)
+                                                               (loop
+                                                                 (- N 1)
+                                                                 (append
+                                                                   (list
+                                                                     (datum->syntax
+                                                                       stx
+                                                                       (string->symbol
+                                                                         (string-append
+                                                                           (symbol->string sn)
+                                                                           "/"
+                                                                           (number->string N)))))
+                                                                   acc))
+                                                               acc)))
+                                                         (headsym (datum->syntax
+                                                                    stx
+                                                                    (string->symbol
+                                                                      (string-append
+                                                                        (symbol->string sn)
+                                                                        "/head"))))
+                                                         (tailsym (datum->syntax
+                                                                    stx
+                                                                    (string->symbol
+                                                                      (string-append
+                                                                        (symbol->string sn)
+                                                                        "/tail"))))
+                                                         (prevsym (datum->syntax
+                                                                    stx
+                                                                    (string->symbol
+                                                                      (string-append
+                                                                        (symbol->string sn)
+                                                                        "/prev"))))
+                                                         (nextsym (datum->syntax
+                                                                    stx
+                                                                    (string->symbol
+                                                                      (string-append
+                                                                        (symbol->string sn)
+                                                                        "/next"))))
+                                                         (allstates (append before after intermediate))
+                                                         ; The head of the ladder is the second state
+                                                         (headtarg  (list-ref allstates 1))
+                                                         ; The tail of the ladder is the penultimate state
+                                                         (tailtarg  (list-ref allstates (+ n 1))))
+                                                    (append
+                                                      (list (cons (headsym
+                                                                  #`(process-state-responses
+                                                                      #,headsym
+                                                                      (quote #,headsym)
+                                                                      current next empty? isequal?
+                                                                      alias #,headtarg))))
 
-                                              (if (and (integer? n)
-                                                       (> n 0))
-                                                ; This specifies a ladder of states
-                                                (cons sn
-                                                      #`(process-state-responses
-                                                          #,sn
-                                                          (quote #,sn)
-                                                          current next empty? isequal?
-                                                          #,@srs))
-                                                ; An individual state
-                                                (cons sn
-                                                      #`(process-state-responses
-                                                          #,sn
-                                                          (quote #,sn)
-                                                          current next empty? isequal?
-                                                          #,@srs)))))
+                                                      (list (cons tailsym
+                                                                  #`(process-state-responses
+                                                                      #,tailsym
+                                                                      (quote #,tailsym)
+                                                                      current next empty? isequal?
+                                                                      alias #,tailtarg)))
+                                                      (cons sn/stx
+                                                            #`(process-state-responses
+                                                                #,sn/stx
+                                                                (quote #,sn/stx)
+                                                                current next empty? isequal?
+                                                                #,@srs/stx))))
+                                                  ; An individual state
+                                                  (cons sn/stx
+                                                        #`(process-state-responses
+                                                            #,sn/stx
+                                                            (quote #,sn/stx)
+                                                            current next empty? isequal?
+                                                            #,@srs/stx))))))
                                           specs))
                                 (names (map car states))
                                 (funcs (map cdr states)))

@@ -40,7 +40,7 @@
                                             (... ...))
                                          spec))))
                          (let* ((initname (syntax->datum (syntax initstate)))
-                                (states (map ; (statename (lambda...))
+                                (states (append-map ; (statename (lambda...))
                                           (lambda(spec)
                                             (let-values
                                               (((sn n b a srs)
@@ -52,7 +52,7 @@
                                               (let ((sn/stx (datum->syntax stx sn))
                                                     (srs/stx (datum->syntax stx srs)))
                                                 (if (and (integer? n)
-                                                         (> n 0))
+                                                         (>= n 0))
                                                   ; This specifies a ladder of states
                                                   (let* ((before (list (datum->syntax stx b)))
                                                          (after  (list (datum->syntax stx a)))
@@ -123,15 +123,15 @@
                                                             (+ N 1)
                                                             (append
                                                               acc
-                                                              (let ((curr (list-ref allstates N))
-                                                                    (prev (list-ref allstates (- N 1)))
-                                                                    (next (list-ref allstates (+ N 1))))
+                                                              (let ((lcurr (list-ref allstates N))
+                                                                    (lprev (list-ref allstates (- N 1)))
+                                                                    (lnext (list-ref allstates (+ N 1))))
                                                                 (list
                                                                   (cons
-                                                                    curr
-                                                                    #`(let ((#,prevsym #,prev)
-                                                                            (#,nextsym #,next)
-                                                                            (#,sn/stx #,curr))
+                                                                    lcurr
+                                                                    #`(let ((#,prevsym #,lprev)
+                                                                            (#,nextsym #,lnext)
+                                                                            (#,sn/stx #,lcurr))
                                                                         (process-state-responses
                                                                           #,sn/stx
                                                                           (quote #,sn/stx)
@@ -139,12 +139,13 @@
                                                                           #,@srs/stx)))))))
                                                           acc))))
                                                   ; An individual state
-                                                  (cons sn/stx
+                                                  (list 
+                                                    (cons sn/stx
                                                         #`(process-state-responses
                                                             #,sn/stx
                                                             (quote #,sn/stx)
                                                             current next empty? isequal?
-                                                            #,@srs/stx))))))
+                                                            #,@srs/stx)))))))
                                           specs))
                                 (names (map car states))
                                 (funcs (map cdr states)))

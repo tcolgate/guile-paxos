@@ -2,7 +2,7 @@
              (ice-9 streams))
 
 
-(test-begin "Statemachine tests") 
+(test-begin "Statemachine tests")
 
 ; simple - matches a 1 [234] 5
 (let ((simple (automaton init stream-car stream-cdr stream-null? equal?
@@ -14,20 +14,20 @@
                                (5 -> end)
                                -> init)
                          (end   : accept))))
-  (test-equal "simple pass" 
+  (test-equal "simple pass"
               #t
-              (simple (list->stream (list 1 2 3 4 2 5)))) 
-  (test-equal "simple pass - late start" 
+              (simple (list->stream (list 1 2 3 4 2 5))))
+  (test-equal "simple pass - late start"
               #t
               (simple (list->stream (list 9 9 9 1 2 3 4 2 5))))
-  (test-equal "simple pass - restart" 
+  (test-equal "simple pass - restart"
               #f
-              (simple (list->stream (list 1 2 3 9 9 1 2 3 4)))) 
-  (test-equal "simple fail - short" 
+              (simple (list->stream (list 1 2 3 9 9 1 2 3 4))))
+  (test-equal "simple fail - short"
               #f
               (simple (list->stream (list 1 2 3 3 4)))))
 
-(test-equal "simple abort fail" 
+(test-equal "simple abort fail"
             #f
             ((automaton init stream-car stream-cdr stream-null? equal?
                         (init  : (1 -> more))
@@ -79,7 +79,7 @@
                         (end            : accept))
             (list->stream (list 0 0 1 4))))
 
-(test-equal "simple ladder test - 4 rung -  (2)"
+(test-equal "simple ladder test - 4 rung - run out (2)"
             #t
             ((automaton init stream-car stream-cdr stream-null? equal?
                         (init           : (1 -> l/head)
@@ -90,12 +90,25 @@
                         (fail           : abort)
                         (end            : accept))
             (list->stream (list 0 0 1 2 2 2 2 4))))
-(define passed
-  (if (eq? (test-runner-fail-count (test-runner-current)) 0) 
-    0 
-    1)) 
 
-(test-end "Statemachine tests") 
+(test-equal "simple ladder test - 4 rung - early quite (3)"
+            #t
+            ((automaton init stream-car stream-cdr stream-null? equal?
+                        (init           : (1 -> l/head)
+                                          -> init)
+                        (l 3 init end   : (2 -> l/next)
+                                          (3 -> l/prev)
+                                          (4 -> end))
+                        (fail           : abort)
+                        (end            : accept))
+            (list->stream (list 0 0 4 1 2 4))))
+
+(define passed
+  (if (eq? (test-runner-fail-count (test-runner-current)) 0)
+    0
+    1))
+
+(test-end "Statemachine tests")
 
 (exit passed)
 

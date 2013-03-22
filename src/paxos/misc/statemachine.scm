@@ -129,9 +129,10 @@
                                                                 (list
                                                                   (cons
                                                                     lcurr
-                                                                    #`(let ((#,prevsym #,lprev)
-                                                                            (#,nextsym #,lnext)
-                                                                            (#,sn/stx #,lcurr))
+                                                                    #`(let
+                                                                        ((#,prevsym (lambda(s)(#,lprev s)))
+                                                                         (#,nextsym (lambda(s)(#,lnext s)))
+                                                                         (#,sn/stx  (lambda(s)(#,lcurr s))))
                                                                         (process-state-responses
                                                                           #,sn/stx
                                                                           (quote #,sn/stx)
@@ -139,7 +140,7 @@
                                                                           #,@srs/stx)))))))
                                                           acc))))
                                                   ; An individual state
-                                                  (list 
+                                                  (list
                                                     (cons sn/stx
                                                         #`(process-state-responses
                                                             #,sn/stx

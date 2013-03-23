@@ -103,6 +103,25 @@
                         (end            : accept))
             (list->stream (list 0 0 4 1 2 4))))
 
+(let* ((v #f)
+       (f (lambda (p n s) (format #t "INSIDE: ~a ~a ~s ~%" p n s) s))
+       (hooks (automaton init stream-car stream-cdr stream-null? equal?
+                         (init : 
+                               (1 -> more)
+                               -> init)
+                         (more : 
+                               (2 -> more)
+                               (3 -> more)
+                               (4 -> more)
+                               (5 -> end)
+                               -> init)
+                         (end  : accept))))
+  (test-equal "hook test"
+              #t
+              (begin
+                (hooks (list->stream (list 1 2 3 4 2 5)))
+                v)))
+
 (define passed
   (if (eq? (test-runner-fail-count (test-runner-current)) 0)
     0

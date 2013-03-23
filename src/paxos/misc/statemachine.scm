@@ -175,15 +175,17 @@
                 (process-transition-action
                   (syntax-rules
                     ()
-                    ((_ state targetfunc targetsym srcfunc srcsym next hooks)
-                     (targetfunc
-                       (next
-                         (fold
-                           apply
-                           state
-                           hooks
-                           (make-list (length hooks) (cons srcsym srcfunc))
-                           (make-list (length hooks) (cons targetsym targetfunc))))))))
+                    ((_ state targetfunc targetsym srcfunc srcsym current next hooks)
+                     (begin
+                       (fold
+                         (lambda(h s t c)
+                           (h s t c))
+                         (current state)
+                         hooks
+                         (make-list (length hooks) (cons srcsym srcfunc))
+                         (make-list (length hooks) (cons targetsym targetfunc)))
+                       (targetfunc
+                         (next state))))))
 
                 (process-state-responses
                   (lambda(stx)
@@ -229,19 +231,18 @@
                        #`(lambda(state)
                            (if (empty? state)
                              (values #f state (cons srcsym srcfunc))
-                             (let ((c (current state)))
-                               (cond
-                                 ((process-transition-test
-                                    c label isequal?)
-                                  (process-transition-action
-                                    state target (quote target) srcfunc srcsym next (list hooks (... ...))))
-                                 (... ...)
-                                 (else
-                                   #,(if (eq? #f (let* ((l (syntax->datum stx))
-                                                        (len (length l)))
-                                                   (list-ref l (- len 1))))
-                                       #`(values #f state)
-                                       #`(fallback (next state)))))))))))))
+                             (cond
+                               ((process-transition-test
+                                  (current state) label isequal?)
+                                (process-transition-action
+                                  state target (quote target) srcfunc srcsym current next (list hooks (... ...))))
+                               (... ...)
+                               (else
+                                 #,(if (eq? #f (let* ((l (syntax->datum stx))
+                                                      (len (length l)))
+                                                 (list-ref l (- len 1))))
+                                     #`(values #f state)
+                                     #`(fallback (next state))))))))))))
 
                (process-automaton forms ...)))))
 

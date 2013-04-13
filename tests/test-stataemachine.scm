@@ -42,6 +42,16 @@
                         (end   : accept))
             (list->stream (list 1 2 3 9 5))))
 
+(test-equal "simple abort on invalid"
+            #f
+            ((automaton init stream-car stream-cdr stream-null? equal?
+                        (init  : (1 -> more))
+                        (more  : (2 -> more)
+                               (3 -> more)
+                               (4 -> end))
+                        (end   : accept))
+            (list->stream (list 1 2 9 5))))
+
 (test-equal "simple alias test"
             #t
             ((automaton init stream-car stream-cdr stream-null? equal?

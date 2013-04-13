@@ -62,11 +62,12 @@
 
                 (process-transition-action
                   (syntax-rules
-                    ()
+                    (abort)
+                    ((_ state abort src current next hooks)
+                     (values #f state (cons (quote src) src))) 
                     ((_ state target src current next hooks)
-                     (begin
-                       (target
-                         (next (call-hooks state target src current next hooks)))))))
+                     (target
+                       (next (call-hooks state target src current next hooks)))) ))
 
                 (call-hooks
                   (syntax-rules
@@ -126,7 +127,6 @@
                            (else
                              (process-transition-action
                                state fallback sn current next (list fbhooks (... ...)))))))))))
-
 
                (process-automaton forms ...)))))
 

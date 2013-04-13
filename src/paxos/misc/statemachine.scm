@@ -31,10 +31,13 @@
                   (syntax-rules ()
                                 ((_ initstate current next empty? isequal?
                                     (sn : srs (... ...))
-                                    (... ...))
+                                    (... ...)
+                                    ghooks (... ...))
                                  (expand-all-states
                                    initstate
-                                   (sn (process-state-responses sn current next empty? isequal? srs (... ...))) 
+                                   (sn (process-state-responses 
+                                         sn current next empty? isequal? 
+                                         (list ghooks (... ...)) srs (... ...))) 
                                    (... ...)))))
 
                (expand-all-states
@@ -81,50 +84,34 @@
                   (syntax-rules
                     (accept abort alias invalid ->)
                     ((_ sn
-                        current next empty? isequal?
+                        current next empty? isequal? ghooks
                         accept)
                      (lambda(state)
                        (values #t state (cons (quote sn) sn))))
 
                     ((_ sn
-                        current next empty? isequal?
+                        current next empty? isequal? ghooks
                         abort)
                      (lambda(state)
                        (values #f state (cons (quote sn) sn))))
 
                     ((_ sn
-                        current next empty? isequal?
+                        current next empty? isequal? ghooks
                         alias target)
                      (lambda(state)
                        (target state)))
 
                     ((_ sn
-                        current next empty? isequal?
+                        current next empty? isequal? ghooks
                         (label -> target hooks (... ...)) (... ...))
                      (process-state-responses
                        sn
-                       current next empty? isequal?
+                       current next empty? isequal? ghooks
                        (label -> target hooks (... ...)) (... ...)
-                       -> invalid))
+                       -> abort))
 
                     ((_ sn
-                        current next empty? isequal?
-                        (label -> target hooks (... ...)) (... ...)
-                        -> invalid fbhooks (... ...))
-                     (lambda(state)
-                       (if (empty? state)
-                         (values #f state (cons (quote sn) sn))
-                         (cond
-                           ((process-transition-test
-                              (current state) label isequal?)
-                            (process-transition-action
-                              state target sn current next (list hooks (... ...))))
-                           (... ...)
-                           (else
-                             (values #f state))))))
-
-                    ((_ sn
-                        current next empty? isequal?
+                        current next empty? isequal? ghooks
                         (label -> target hooks (... ...)) (... ...)
                         -> fallback fbhooks (... ...))
                      (lambda(state)
@@ -134,7 +121,7 @@
                            ((process-transition-test
                               (current state) label isequal?)
                             (process-transition-action
-                              state target sn current next (list hooks (... ...))))
+                              state target sn current next (append ghooks (list hooks (... ...)))))
                            (... ...)
                            (else
                              (process-transition-action

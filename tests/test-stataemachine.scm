@@ -119,9 +119,9 @@
                                -> init)
                          (more : 
                                (2 -> more f)
-                               (3 -> more g)
-                               (4 -> more)
-                               (5 -> end)
+                               (3 -> more )
+                               (4 -> more f)
+                               (5 -> end g)
                                -> init)
                          (end  : accept))))
   (test-equal "hook test"

@@ -55,63 +55,71 @@
                         (end        : accept))
             (list->stream (list 1 2 3 3 4))))
 
-(test-equal "simple ladder test - empty"
-            #t
-            ((automaton init stream-car stream-cdr stream-null? equal?
-                        (init           : (1 -> l/head)
-                                          -> init)
-                        (l 0 init end   : (2 -> l/next)
-                                          (3 -> l/prev)
-                                          (4 -> end))
-                        (fail           : abort)
-                        (end            : accept))
-            (list->stream (list 0 0 1 2 2 2 2 2 2))))
+;(test-equal "simple ladder test - empty"
+;            #t
+;            ((automaton init stream-car stream-cdr stream-null? equal?
+;                        (init           : (1 -> l/head)
+;                                          -> init)
+;                        (l 0 init end   : (2 -> l/next)
+;                                          (3 -> l/prev)
+;                                          (4 -> end))
+;                        (fail           : abort)
+;                        (end            : accept))
+;            (list->stream (list 0 0 1 2 2 2 2 2 2))))
+;
+;(test-equal "simple ladder test - 4 rung -  (1)"
+;            #t
+;            ((automaton init stream-car stream-cdr stream-null? equal?
+;                        (init           : (1 -> l/head)
+;                                          -> init)
+;                        (l 3 init end   : (2 -> l/next)
+;                                          (3 -> l/prev)
+;                                          (4 -> end))
+;                        (fail           : abort)
+;                        (end            : accept))
+;            (list->stream (list 0 0 1 4))))
+;
+;(test-equal "simple ladder test - 4 rung - run out (2)"
+;            #t
+;            ((automaton init stream-car stream-cdr stream-null? equal?
+;                        (init           : (1 -> l/head)
+;                                          -> init)
+;                        (l 3 init end   : (2 -> l/next)
+;                                          (3 -> l/prev)
+;                                          (4 -> end))
+;                        (fail           : abort)
+;                        (end            : accept))
+;            (list->stream (list 0 0 1 2 2 2 2 4))))
+;
+;(test-equal "simple ladder test - 4 rung - early quite (3)"
+;            #t
+;            ((automaton init stream-car stream-cdr stream-null? equal?
+;                        (init           : (1 -> l/head)
+;                                          -> init)
+;                        (l 3 init end   : (2 -> l/next)
+;                                          (3 -> l/prev)
+;                                          (4 -> end))
+;                        (fail           : abort)
+;                        (end            : accept))
+;            (list->stream (list 0 0 4 1 2 4))))
 
-(test-equal "simple ladder test - 4 rung -  (1)"
-            #t
-            ((automaton init stream-car stream-cdr stream-null? equal?
-                        (init           : (1 -> l/head)
-                                          -> init)
-                        (l 3 init end   : (2 -> l/next)
-                                          (3 -> l/prev)
-                                          (4 -> end))
-                        (fail           : abort)
-                        (end            : accept))
-            (list->stream (list 0 0 1 4))))
-
-(test-equal "simple ladder test - 4 rung - run out (2)"
-            #t
-            ((automaton init stream-car stream-cdr stream-null? equal?
-                        (init           : (1 -> l/head)
-                                          -> init)
-                        (l 3 init end   : (2 -> l/next)
-                                          (3 -> l/prev)
-                                          (4 -> end))
-                        (fail           : abort)
-                        (end            : accept))
-            (list->stream (list 0 0 1 2 2 2 2 4))))
-
-(test-equal "simple ladder test - 4 rung - early quite (3)"
-            #t
-            ((automaton init stream-car stream-cdr stream-null? equal?
-                        (init           : (1 -> l/head)
-                                          -> init)
-                        (l 3 init end   : (2 -> l/next)
-                                          (3 -> l/prev)
-                                          (4 -> end))
-                        (fail           : abort)
-                        (end            : accept))
-            (list->stream (list 0 0 4 1 2 4))))
-
-(let* ((v #f)
-       (f (lambda (p n s) (format #t "INSIDE: ~a ~a ~s ~%" p n s) s))
+(let* ((v1 #f)
+       (v2 #f)
+      (f (lambda (p n s) 
+            (format #t "INSIDE1: ~a ~a ~s ~%" p n s) 
+            (set! v1 #t)
+            s)) 
+       (g (lambda (p n s) 
+            (format #t "INSIDE2: ~a ~a ~s ~%" p n s) 
+            (set! v2 #t)
+            s))
        (hooks (automaton init stream-car stream-cdr stream-null? equal?
                          (init : 
-                               (1 -> more)
+                               (1 -> more f)
                                -> init)
                          (more : 
-                               (2 -> more)
-                               (3 -> more)
+                               (2 -> more f)
+                               (3 -> more g)
                                (4 -> more)
                                (5 -> end)
                                -> init)
@@ -120,7 +128,7 @@
               #t
               (begin
                 (hooks (list->stream (list 1 2 3 4 2 5)))
-                v)))
+                (and v1 v2))))
 
 (define passed
   (if (eq? (test-runner-fail-count (test-runner-current)) 0)

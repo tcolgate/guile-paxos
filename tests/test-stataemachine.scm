@@ -115,7 +115,7 @@
 
 (let* ((v1 #f)
        (v2 #f)
-       (f (lambda (p n s) (set! v1 #t) s)) 
+       (f (lambda (p n s) (format #t "LOCAL: ~a ~a ~a~%" p n s)(set! v1 #t) s)) 
        (g (lambda (p n s) (format #t "GLOBAL: ~a ~a ~a~%" p n s) (set! v2 #t) s))
        (hooks (automaton init stream-car stream-cdr stream-null? equal?
                          (init : 

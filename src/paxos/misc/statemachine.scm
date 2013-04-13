@@ -129,7 +129,7 @@
                            ((process-transition-test
                               (current state) label isequal?)
                             (process-transition-action
-                              state target sn current next (append ghooks (list hooks (... ...)))))
+                              state target sn current next (append (list hooks (... ...)) ghooks)))
                            (... ...)
                            (else
                              (process-transition-action

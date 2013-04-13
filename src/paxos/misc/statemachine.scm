@@ -28,11 +28,18 @@
              (letrec-syntax
 
                ((process-automaton
-                  (syntax-rules ()
+                  (syntax-rules (:hooks)
+                                ((_ initstate current next empty? isequal?
+                                    (sn : srs (... ...))
+                                    (... ...))
+                                 (process-automaton initstate current next empty? isequal?
+                                                    (sn : srs (... ...))
+                                                    (... ...)
+                                                    :hooks () ))
                                 ((_ initstate current next empty? isequal?
                                     (sn : srs (... ...))
                                     (... ...)
-                                    ghooks (... ...))
+                                    :hooks (ghooks (... ...))) 
                                  (expand-all-states
                                    initstate
                                    (sn (process-state-responses 
@@ -40,12 +47,12 @@
                                          (list ghooks (... ...)) srs (... ...))) 
                                    (... ...)))))
 
-               (expand-all-states
+                (expand-all-states
                   (syntax-rules ()
                                 ((_ initstate (name func) (... ...))
                                  (build-automaton-letrec initstate
-                                   (name (... ...))
-                                   (func (... ...))))))
+                                                         (name (... ...))
+                                                         (func (... ...))))))
 
                 (build-automaton-letrec
                   (syntax-rules ()
@@ -83,7 +90,7 @@
 
                 (process-state-responses
                   (syntax-rules
-                    (accept abort alias invalid ->)
+                    (accept abort alias invalid -> :hooks)
                     ((_ sn
                         current next empty? isequal? ghooks
                         accept)

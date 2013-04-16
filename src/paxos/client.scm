@@ -2,14 +2,13 @@
    #:export (
      client-loop)
    #:use-module (rnrs bytevectors)
-   #:use-module (paxos net mcast))
+   #:use-module (srfi srfi-41)
+   #:use-module (paxos net mcast)
+   #:use-module (paxos net datagram-stream))
 
 (define* (client-loop)
-  (let ((rcv  (make-mcast-reciever #:blocking #f)))
-    (while #t 
-      (let ((buf (rcv))) 
-        (if (not (eq? buf #f)) 
-          (format #t "Data: ~a~%" (utf8->string buf))
-          (format #t "no data~%")) 
-        (sleep 1)))))
+  (let ((rcv  (make-datagram-stream (make-mcast-reciever #:blocking #t))))
+    (let loop ((thing (stream-car rcv)))
+      (format #t "Data: ~a~%" (utf8->string thing)) 
+      (loop (stream-cdr rcv)))))
 

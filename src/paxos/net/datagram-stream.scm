@@ -16,4 +16,4 @@
         (else (stream-cons
                 data
                 (strm recv)))))) 
-  (strm recv))
+  (strm recver))

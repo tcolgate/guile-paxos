@@ -9,7 +9,7 @@
     (while #t 
       (let ((buf (rcv))) 
         (if (not (eq? buf #f)) 
-          (format #t (utf8->string buf))
+          (format #t "Data: ~a~%" (utf8->string buf))
           (format #t "no data~%")) 
         (sleep 1)))))
 

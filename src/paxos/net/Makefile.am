@@ -1,4 +1,4 @@
-SCHEMESOURCES=mcast.scm
+SCHEMESOURCES=mcast.scm datagram-stream.scm
 
 if HAVE_GUILE_COMPILE
 GOBJECTS = $(SCHEMESOURCES:%.scm=%.go)

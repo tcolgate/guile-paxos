@@ -8,7 +8,7 @@
 
 (define IP_MULTICAST_LOOP 34)
 
-(define* (make-mcast-reciever #:key (port 1234) (group "224.0.1.1") (blocking #f))
+(define* (make-mcast-reciever #:key (port 1234) (group "224.0.1.1") (blocking #t))
   (let ((sck       (socket PF_INET SOCK_DGRAM 0)) 
         (addr      (inet-pton AF_INET group )) 
         (nport     (htons port)))
@@ -23,12 +23,12 @@
         (if (not blocking)
           (let ((waiting (select (list sck) '() '() 0))) 
             (if (not (eq? (car waiting) '())) 
-              (recv! sck buffer)
+              (recvfrom! sck buffer)
               #f))
-          (recv! sck buffer)) 
+          (recvfrom! sck buffer)) 
         buffer))))
 
-(define* (make-mcast-sender #:key (port 1234) (group "224.0.1.1") (scope 4) (blocking #f))
+(define* (make-mcast-sender #:key (port 1234) (group "224.0.1.1") (scope 4) (blocking #t))
   (let ((sck   (socket PF_INET SOCK_DGRAM 0)) 
         (addr  (inet-pton AF_INET group )) 
         (nport (htons port))
@@ -39,10 +39,5 @@
                             (fcntl sck F_GETFL) 
                             O_NONBLOCK)))(lambda (message)
       (if (bytevector? message)
-        (let loop ((len  (bytevector-length message))
-                   (gone 0))
-          (let ((sent (sendto sck message AF_INET addr port)))
-            (if (> len (+ gone sent))
-              #f ; should loop round
-              #t)))
+        (sendto sck message AF_INET addr port)
         #f))))

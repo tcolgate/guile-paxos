@@ -6,14 +6,18 @@
    #:use-module (srfi srfi-41)
    #:use-module (paxos net mcast))
 
-(define* (make-datagram-stream  recver )
+
+; This is largely stolen from srfi-41
+
+(define-stream (make-datagram-stream  recv)
   "make-datagram-stream recver "
-  (define-stream (strm recv)
-    (let ((data (recv)))
-      (cond 
-        ((eof-object? data) stream-null)
-        ((eq? data #f) (call/cc (lambda (k) k)))
-        (else (stream-cons
-                data
-                (strm recv)))))) 
-  (strm recver))
+  (stream-let loop ((data (recv)))
+              (cond
+                ((eof-object? data)
+                 stream-null)
+                ((eq? data #f)
+                 (call/cc (lambda (k) k)))
+                (else
+                  (stream-cons
+                        data
+                        (loop (recv)))))))

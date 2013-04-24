@@ -7,8 +7,8 @@
    #:use-module (paxos net datagram-stream))
 
 (define* (client-loop)
-  (let ((rcv  (make-datagram-stream (make-mcast-reciever #:blocking #t))))
-    (let loop ((thing (stream-car rcv)))
+  (let ((rcv  (make-mcast-reciever #:blocking #t)))
+    (let loop ((thing (rcv))) 
       (format #t "Data: ~a~%" (utf8->string thing)) 
-      (loop (stream-cdr rcv)))))
+      (loop (rcv)))))
 

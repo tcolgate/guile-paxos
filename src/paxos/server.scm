@@ -10,9 +10,11 @@
   (let ((snd  (make-mcast-sender)))
     (let loop ((i 0)) 
       (snd 
-        (string->utf8 (string-append (number->string i) " This is my message to you \n")))
+        (string->utf8 (number->string i)))
       (sleep 1)
-      (loop (+ i 1)))))
+      (loop (if (> i 5)
+              0 
+              (+ i 1))))))
 
 (define* (start-server 
            #:key (acceptors 3)

@@ -133,7 +133,7 @@
                            (... ...)
                            (else
                              (process-transition-action
-                               state fallback sn current next (list fbhooks (... ...)))))))))))
+                               state fallback sn current next (append (list fbhooks (... ...)) ghooks))))))))))
 
                (process-automaton forms ...)))))
 

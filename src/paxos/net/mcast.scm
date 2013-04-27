@@ -12,7 +12,7 @@
                               (port 1234)
                               (group "224.0.1.1")
                               (blocking #t)
-                              (on-block (lambda (sck) #f)))
+                              (on-block (lambda (sck buf) #f)))
   "make-mcast-reciever: Create a socket that listens for multicast packets.
          If a non-blocking socket is used, a continuation is returned, along with
          the blocking socket."
@@ -31,7 +31,7 @@
           (let ((waiting (select (list sck) '() '() 0))) 
             (if (not (eq? (car waiting) '())) 
               (recvfrom! sck buffer)
-              (on-block sck)))
+              (on-block sck buffer)))
           (recvfrom! sck buffer)) 
         buffer))))
 

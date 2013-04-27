@@ -15,9 +15,7 @@
               (cond
                 ((eof-object? data)
                  stream-null)
-                ((eq? data #f)
-                 (call/cc (lambda (k) k)))
                 (else
                   (stream-cons
-                        data
-                        (loop (recv)))))))
+                    data
+                    (loop (recv)))))))

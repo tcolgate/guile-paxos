@@ -8,7 +8,14 @@
 
 (define IP_MULTICAST_LOOP 34)
 
-(define* (make-mcast-reciever #:key (port 1234) (group "224.0.1.1") (blocking #t))
+(define* (make-mcast-reciever #:key
+                              (port 1234)
+                              (group "224.0.1.1")
+                              (blocking #t)
+                              (on-block (lambda (sck) #f)))
+  "make-mcast-reciever: Create a socket that listens for multicast packets.
+         If a non-blocking socket is used, a continuation is returned, along with
+         the blocking socket."
   (let ((sck       (socket PF_INET SOCK_DGRAM 0)) 
         (addr      (inet-pton AF_INET group )) 
         (nport     (htons port)))
@@ -24,7 +31,7 @@
           (let ((waiting (select (list sck) '() '() 0))) 
             (if (not (eq? (car waiting) '())) 
               (recvfrom! sck buffer)
-              #f))
+              (on-block sck)))
           (recvfrom! sck buffer)) 
         buffer))))
 

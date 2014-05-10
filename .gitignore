@@ -24,4 +24,5 @@ Makefile
 .cache
 tags
 *.log
+*.trs
 test-driver

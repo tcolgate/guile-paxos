@@ -3,12 +3,13 @@ TESTS=test-stataemachine.scm \
 			test-mcast.scm \
 			test-utils.scm
 
-TESTS_ENVIRONMENT=\
-  guile --no-auto-compile -L $(top_srcdir) -L $(top_srcdir)/src --use-srfi=64
+TEST_EXTENSIONS = .scm
+SCM_LOG_COMPILER = guile
+AM_SCM_LOG_FLAGS = --no-auto-compile -L $(top_srcdir) -L $(top_srcdir)/src --use-srfi=64
 
-%.check: %
-	echo $(TESTS_ENVIRONMENT)
-	$(TESTS_ENVIRONMENT) $*
+#%.check: %
+#	echo $(TESTS_ENVIRONMENT)
+#	$(TESTS_ENVIRONMENT) $*
 
 EXTRA_DIST=$(TESTS)
 CLEANFILES=*.log

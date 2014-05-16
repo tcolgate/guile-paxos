@@ -19,6 +19,9 @@
   (test-equal "simple pass"
               #t
               (simple (list->stream (list 1 2 3 4 2 5))))
+  (test-equal "simple pass with excess"
+              #t
+              (simple (list->stream (list 1 5 7 7 7 7))))
   (test-equal "simple pass - late start"
               #t
               (simple (list->stream (list 9 9 9 1 2 3 4 2 5))))
@@ -160,10 +163,13 @@
                     (end   : accept)
                     :hooks ((lambda (p n s) (format #t "GLOBAL: ~a ~a ~a~%" p n s) s))) start))))) 
 
-  (let* ((call2 (simple 1))
-         (call3 (call2  5))
-         (call4 (call3  6))) 
-     (format #t "results: ~a~%" (list call2 call3 call4)))) 
+  (test-equal "co-routine test"
+              #t
+              (let* ((call2 (simple 1))
+                     (call3 (call2  5))
+                     (call4 (call3  #f))) ; this call is a bit redundant as we've passed already
+                (format #t "results: ~a~%" (list call2 call3 call4))
+                call4))) 
 
 
 (define passed

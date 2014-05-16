@@ -1,4 +1,6 @@
 (use-modules (paxos misc statemachine)
+             (paxos misc coroutines)
+             (srfi srfi-11)
              (ice-9 streams))
 
 
@@ -135,6 +137,35 @@
                 (hooks (list->stream (list 1 2 3 4 2 5)))
                 (and v1 v2))))
 
+(let ((simple (lambda (start)
+                (with-yield 
+                  yield
+                  ((automaton 
+                    init 
+                    (lambda (v) (format #t "CURR: ~a ~%" v) v)  
+                    (lambda (v) 
+                      (format #t "NEXT: ~a yielding~%" v)
+                      (let ((n (yield)))
+                        (format #t "back with ~a~%" n)
+                        n))  
+                    (lambda (v)  (not v)) 
+                    equal?
+                    (init : (1 -> more)
+                          -> init)
+                    (more : (2 -> more)
+                          (3 -> more)
+                          (4 -> more)
+                          (5 -> end)
+                          -> init)
+                    (end   : accept)
+                    :hooks ((lambda (p n s) (format #t "GLOBAL: ~a ~a ~a~%" p n s) s))) start))))) 
+
+  (let* ((call2 (simple 1))
+         (call3 (call2  5))
+         (call4 (call3  6))) 
+     (format #t "results: ~a~%" (list call2 call3 call4)))) 
+
+
 (define passed
   (if (eq? (test-runner-fail-count (test-runner-current)) 0)
     0
@@ -143,5 +174,4 @@
 (test-end "Statemachine tests")
 
 (exit passed)
-
-
+ 

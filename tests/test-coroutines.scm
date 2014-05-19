@@ -1,8 +1,8 @@
-(use-modules (paxos misc coroutines)
-             (srfi srfi-11))
+(import 
+  (paxos misc coroutines)
+  (srfi srfi-11))
 
-
-(test-begin "Coroutine tests") 
+(test-begin "Coroutine tests")
 
 (let ((generate (lambda (traverse collection)
                   (with-yield yield
@@ -19,7 +19,7 @@
     0
     1))
 
-(test-end "Coroutine tests") 
+(test-end "Coroutine tests")
 
 (exit passed)
 

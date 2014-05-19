@@ -1,9 +1,9 @@
-(use-modules (paxos misc utils)
-             (srfi srfi-11))
+(import
+  (paxos misc utils)
+  (rnrs)
+  (srfi srfi-11))
 
-
-(test-begin "Utils tests") 
-
+(test-begin "Utils tests")
 
 (test-equal "majority - 1" (majority 1) 1)
 (test-equal "majority - 2" (majority 2) 2)
@@ -19,7 +19,7 @@
     0
     1))
 
-(test-end "Utils tests") 
+(test-end "Utils tests")
 
 (exit passed)
 

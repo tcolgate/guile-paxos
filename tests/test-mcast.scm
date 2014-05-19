@@ -1,8 +1,9 @@
-(use-modules (paxos net mcast)
-             (srfi srfi-11))
+(import
+  (paxos net mcast)
+  (rnrs)
+  (srfi srfi-11))
 
-
-(test-begin "MCast tests") 
+(test-begin "MCast tests")
 
 (test-equal "No tests yet" #t #t)
 
@@ -11,7 +12,7 @@
     0
     1))
 
-(test-end "MCast tests") 
+(test-end "MCast tests")
 
 (exit passed)
 

@@ -1,8 +1,8 @@
-(use-modules (paxos misc statemachine)
-             (paxos misc coroutines)
-             (srfi srfi-11)
-             (ice-9 streams))
-
+(import 
+  (paxos misc statemachine)
+  (paxos misc coroutines)
+  (srfi srfi-11)
+  (srfi srfi-41))
 
 (test-begin "Statemachine tests")
 
@@ -120,13 +120,13 @@
 
 (let* ((v1 #f)
        (v2 #f)
-       (f (lambda (p n s) (format #t "LOCAL: ~a ~a ~a~%" p n s)(set! v1 #t) s)) 
+       (f (lambda (p n s) (format #t "LOCAL: ~a ~a ~a~%" p n s)(set! v1 #t) s))
        (g (lambda (p n s) (format #t "GLOBAL: ~a ~a ~a~%" p n s) (set! v2 #t) s))
        (hooks (automaton init stream-car stream-cdr stream-null? equal?
-                         (init : 
+                         (init :
                                (1 -> more f)
                                -> init)
-                         (more : 
+                         (more :
                                (2 -> more f)
                                (3 -> more )
                                (4 -> more f)
@@ -141,17 +141,17 @@
                 (and v1 v2))))
 
 (let ((simple (lambda (start)
-                (with-yield 
+                (with-yield
                   yield
-                  ((automaton 
-                    init 
-                    (lambda (v) (format #t "CURR: ~a ~%" v) v)  
-                    (lambda (v) 
+                  ((automaton
+                    init
+                    (lambda (v) (format #t "CURR: ~a ~%" v) v)
+                    (lambda (v)
                       (format #t "NEXT: ~a yielding~%" v)
                       (let ((n (yield)))
                         (format #t "back with ~a~%" n)
-                        n))  
-                    (lambda (v)  (not v)) 
+                        n))
+                    (lambda (v)  (not v))
                     equal?
                     (init : (1 -> more)
                           -> init)
@@ -161,7 +161,7 @@
                           (5 -> end)
                           -> init)
                     (end   : accept)
-                    :hooks ((lambda (p n s) (format #t "GLOBAL: ~a ~a ~a~%" p n s) s))) start))))) 
+                    :hooks ((lambda (p n s) (format #t "GLOBAL: ~a ~a ~a~%" p n s) s))) start)))))
 
   (test-equal "co-routine test"
               #t
@@ -169,7 +169,7 @@
                      (call3 (call2  5))
                      (call4 (call3  #f))) ; this call is a bit redundant as we've passed already
                 (format #t "results: ~a~%" (list call2 call3 call4))
-                call4))) 
+                call4)))
 
 
 (define passed
@@ -180,4 +180,4 @@
 (test-end "Statemachine tests")
 
 (exit passed)
- 
+
